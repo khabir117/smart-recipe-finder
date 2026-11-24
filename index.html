@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Recipe Finder</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f7f8f3;color:#26352a}
+header{background:#214b35;color:white;padding:30px 18px;text-align:center}
+header h1{font-size:32px;margin:5px}
+header p{color:#e0eadf}
+main{max-width:950px;margin:30px auto;padding:15px}
+.search{display:flex;gap:8px;flex-wrap:wrap}
+input,button{padding:14px;border-radius:10px;border:1px solid #ddd;font-size:16px}
+input{flex:1;min-width:200px}
+button{background:#34764c;color:white;border:0;cursor:pointer}
+button:hover{background:#245b38}
+.categories{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.categories button{background:#e4ecdf;color:#294b35}
+.categories button.active{background:#34764c;color:white}
+#results{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.card{background:white;border-radius:15px;overflow:hidden;box-shadow:0 3px 12px #0001}
+.card img{width:100%;height:165px;object-fit:cover}
+.info{padding:16px}
+.info h3{margin:5px 0 10px}
+.info p{color:#647064;font-size:14px}
+.tag{color:#34764c;font-weight:bold;font-size:13px}
+.details{display:none;margin-top:12px;border-top:1px solid #eee;padding-top:10px}
+.card.open .details{display:block}
+.empty{text-align:center;padding:30px;grid-column:1/-1}
+footer{text-align:center;padding:25px;color:#777}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🥗 Smart Recipe Finder</h1>
+<p>Discover delicious meals with ingredients you already have.</p>
+</header>
+
+<main>
+<h2>What's in your kitchen?</h2>
+<p>Enter ingredients separated by commas.</p>
+
+<div class="search">
+<input id="ingredients" placeholder="e.g. eggs, tomato, onion">
+<button onclick="searchRecipes()">Find Recipes</button>
+</div>
+
+<div class="categories">
+<button class="active" onclick="filter('All',this)">All</button>
+<button onclick="filter('Breakfast',this)">Breakfast</button>
+<button onclick="filter('Lunch',this)">Lunch</button>
+<button onclick="filter('Dinner',this)">Dinner</button>
+</div>
+
+<h2 id="heading">Popular Recipes</h2>
+<div id="results"></div>
+</main>
+
+<footer>Made with ❤️ for food lovers | Smart Recipe Finder</footer>
+
+<script>
+const recipes=[
+{
+name:"Vegetable Omelette",
+category:"Breakfast",
+time:"15 min",
+image:"https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600",
+ingredients:["egg","onion","tomato","pepper"],
+steps:"Beat eggs. Add chopped vegetables. Cook in a pan until set."
+},
+{
+name:"Tomato Pasta",
+category:"Lunch",
+time:"25 min",
+image:"https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600",
+ingredients:["tomato","pasta","garlic","onion"],
+steps:"Cook pasta. Prepare tomato and garlic sauce. Mix together."
+},
+{
+name:"Chicken Rice Bowl",
+category:"Dinner",
+time:"30 min",
+image:"https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600",
+ingredients:["chicken","rice","onion","pepper"],
+steps:"Cook rice. Cook chicken with seasoning and vegetables. Serve together."
+},
+{
+name:"Avocado Toast",
+category:"Breakfast",
+time:"10 min",
+image:"https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600",
+ingredients:["bread","avocado","lemon"],
+steps:"Mash avocado with lemon. Spread over toasted bread."
+},
+{
+name:"Fresh Garden Salad",
+category:"Lunch",
+time:"10 min",
+image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600",
+ingredients:["tomato","cucumber","lettuce","lemon"],
+steps:"Chop vegetables. Mix with lemon juice and your favorite dressing."
+},
+{
+name:"Garlic Fried Rice",
+category:"Dinner",
+time:"20 min",
+image:"https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600",
+ingredients:["rice","garlic","egg","onion"],
+steps:"Cook garlic and onion. Add rice and egg. Stir until heated."
+}
+];
+
+let category="All";
+let searchTerms=[];
+
+function showRecipes(){
+let filtered=recipes.map(r=>({
+...r,
+matches:r.ingredients.filter(i=>searchTerms.includes(i)).length
+})).filter(r=>
+(category==="All"||r.category===category)&&
+(searchTerms.length===0||r.matches>0)
+).sort((a,b)=>b.matches-a.matches);
+
+document.getElementById("results").innerHTML=
+filtered.length?filtered.map(r=>`
+<div class="card">
+<img src="${r.image}" alt="${r.name}">
+<div class="info">
+<span class="tag">${r.category} • ${r.time}</span>
+<h3>${r.name}</h3>
+<p>Ingredients: ${r.ingredients.join(", ")}</p>
+${searchTerms.length?`<p>Matching ingredients: ${r.matches}</p>`:""}
+<button onclick="this.closest('.card').classList.toggle('open')">View Recipe</button>
+<div class="details">
+<strong>Instructions</strong>
+<p>${r.steps}</p>
+</div>
+</div>
+</div>`).join("")
+:'<div class="empty">No matching recipes found. Try different ingredients!</div>';
+
+}
+
+function searchRecipes(){
+searchTerms=document.getElementById("ingredients").value
+.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean);
+document.getElementById("heading").textContent="Your Recipe Results";
+showRecipes();
+}
+
+function filter(value,button){
+category=value;
+document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
+button.classList.add("active");
+showRecipes();
+}
+
+showRecipes();
+</script>
+</body>
+</html>
